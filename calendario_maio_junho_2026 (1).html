@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendário de Implantação — Maio e Junho 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f4f4f0;
+    min-height: 100vh;
+    padding: 2rem;
+    color: #1a1a1a;
+  }
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem 2.5rem 2.5rem;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.08);
+  }
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .logo { font-size: 13px; font-weight: 600; letter-spacing: .08em; color: #888; text-transform: uppercase; }
+  .badge-imp {
+    display: inline-block;
+    background: #1a1a1a;
+    color: #F5C842;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 16px;
+    border-radius: 20px;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+  }
+  .nav-btn {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 7px 20px;
+    font-size: 13px;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .nav-btn:hover:not(:disabled) { background: #f4f4f0; }
+  .nav-btn:disabled { opacity: 0.25; cursor: default; }
+  .month-title { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+  .month-meta { text-align: center; margin-bottom: 1rem; }
+  .month-sub { font-size: 12px; color: #888; margin-bottom: 6px; }
+  .month-pill span {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 14px;
+    border-radius: 20px;
+  }
+  .pill-imp  { background: #F5C842; color: #412402; }
+  .pill-cont { background: #1a1a1a; color: #F5C842; }
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding: 12px 16px;
+    background: #fafaf8;
+    border-radius: 10px;
+    border: 0.5px solid #e8e8e0;
+  }
+  .leg { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #555; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .grid-head {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .dh { text-align: center; font-size: 11px; font-weight: 600; color: #888; padding: 5px 0; }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cell {
+    min-height: 108px;
+    border: 1px solid #e8e8e0;
+    border-radius: 10px;
+    padding: 7px 6px;
+    background: #fff;
+    position: relative;
+    transition: box-shadow .15s, border-color .15s;
+  }
+  .cell:hover:not(.empty):not(.weekend):not(.holiday) {
+    box-shadow: 0 2px 12px rgba(245,200,66,0.2);
+    border-color: #F5C842;
+    z-index: 2;
+  }
+  .cell.empty   { background: transparent; border-color: transparent; }
+  .cell.weekend { background: #fafaf8; border-color: #f0f0ea; }
+  .cell.holiday { background: #FAEEDA; border-color: #F5C842; }
+  .cell.imp-start { border: 2.5px solid #F5C842; box-shadow: 0 0 0 3px rgba(245,200,66,0.15); }
+  .day-num {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .day-num.wkd       { color: #ccc; }
+  .day-num.today-num { background: #F5C842; color: #412402; }
+  .holiday-label {
+    font-size: 9px;
+    color: #633806;
+    background: #F5C842;
+    border-radius: 3px;
+    padding: 1px 5px;
+    margin-bottom: 3px;
+    display: inline-block;
+    font-weight: 600;
+  }
+  .event {
+    font-size: 10px;
+    border-radius: 4px;
+    padding: 2px 5px;
+    margin-bottom: 2px;
+    line-height: 1.35;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity .12s;
+  }
+  .event:hover { opacity: .8; }
+  .ev-cli   { background: #FAEEDA; color: #633806; border-left: 3px solid #E9A800; }
+  .ev-iabs  { background: #1a1a1a; color: #F5C842; border-left: 3px solid #F5C842; }
+  .ev-both  { background: #F5C842; color: #412402; border-left: 3px solid #1a1a1a; }
+  .ev-marco { background: #1a1a1a; color: #fff;    border-left: 3px solid #F5C842; font-weight: 700; }
+  .day-counter {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 8.5px;
+    color: #999;
+    background: #f4f4f0;
+    border-radius: 4px;
+    padding: 1px 4px;
+    font-weight: 600;
+  }
+  .tooltip {
+    position: fixed;
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 9999;
+    max-width: 260px;
+    line-height: 1.6;
+    display: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.22);
+  }
+  .tooltip strong {
+    display: block;
+    color: #F5C842;
+    font-size: 10px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .footer {
+    margin-top: 1.75rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid #e8e8e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .footer-note { font-size: 11px; color: #aaa; }
+  .footer-tags { display: flex; gap: 8px; }
+  .ftag { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+  .ftag-cli  { background: #FAEEDA; color: #633806; }
+  .ftag-iabs { background: #1a1a1a; color: #F5C842; }
+  .ftag-both { background: #F5C842; color: #412402; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top-bar">
+    <div class="logo">Processos Operacionais — IABS</div>
+    <span class="badge-imp">Implantação: 45 dias úteis · Início 04/05/2026</span>
+  </div>
+
+  <div class="header">
+    <button class="nav-btn" id="btn-prev" onclick="changeMonth(-1)">&#8592; Anterior</button>
+    <div class="month-title" id="month-title"></div>
+    <button class="nav-btn" id="btn-next" onclick="changeMonth(1)">Próximo &#8594;</button>
+  </div>
+
+  <div class="month-meta">
+    <div class="month-sub" id="month-sub"></div>
+    <div class="month-pill" id="month-pill"></div>
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="dot" style="background:#FAEEDA;border:2px solid #E9A800"></div>Responsabilidade do cliente</div>
+    <div class="leg"><div class="dot" style="background:#1a1a1a"></div>Responsabilidade IABS</div>
+    <div class="leg"><div class="dot" style="background:#F5C842;border:2px solid #1a1a1a"></div>Cliente + IABS</div>
+    <div class="leg"><div class="dot" style="background:#1a1a1a;border:2px solid #F5C842"></div>Marco do projeto</div>
+    <div class="leg"><div class="dot" style="background:#fafaf8;border:1px solid #ddd"></div>Fim de semana / Feriado</div>
+  </div>
+
+  <div class="grid-head">
+    <div class="dh">Dom</div><div class="dh">Seg</div><div class="dh">Ter</div>
+    <div class="dh">Qua</div><div class="dh">Qui</div><div class="dh">Sex</div><div class="dh">Sáb</div>
+  </div>
+  <div class="grid" id="cal"></div>
+
+  <div class="footer">
+    <div class="footer-note">Gerado para uso interno — IABS &amp; Cliente · 2026</div>
+    <div class="footer-tags">
+      <span class="ftag ftag-cli">Cliente</span>
+      <span class="ftag ftag-iabs">IABS</span>
+      <span class="ftag ftag-both">Compartilhado</span>
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tip"><strong id="tip-label"></strong><span id="tip-text"></span></div>
+
+<script>
+  let currentIndex = 0;
+
+  const MONTHS_DATA = [
+    { year:2026, month:4, name:'Maio 2026',  sub:'Mês 1 do projeto', pillClass:'pill-imp',  pillText:'Implantação · D1 a D21' },
+    { year:2026, month:5, name:'Junho 2026', sub:'Mês 2 do projeto', pillClass:'pill-cont', pillText:'Implantação · D22 a D45 + Processos contínuos' },
+  ];
+
+  const IMPLANT_START = new Date(2026, 4, 4);
+
+  const HOLIDAYS = {
+    '2026-4-1':  'Dia do Trabalho',
+    '2026-5-11': 'Corpus Christi',
+  };
+
+  function isHoliday(y,m,d){ return HOLIDAYS[`${y}-${m}-${d}`]||null; }
+  function isWeekend(dow){ return dow===0||dow===6; }
+  function isWorkday(y,m,d){
+    const dow = new Date(y,m,d).getDay();
+    return !isWeekend(dow) && !isHoliday(y,m,d);
+  }
+  function workdayNumber(y,m,d){
+    const target = new Date(y,m,d);
+    if(target < IMPLANT_START) return null;
+    let count = 0, cur = new Date(IMPLANT_START);
+    while(cur <= target){
+      if(isWorkday(cur.getFullYear(), cur.getMonth(), cur.getDate())) count++;
+      cur.setDate(cur.getDate()+1);
+    }
+    return count;
+  }
+
+  function getEvents(d,m,y){
+    const ev = [];
+    if(!isWorkday(y,m,d)) return ev;
+    const dow = new Date(y,m,d).getDay();
+    const isMon=dow===1, isWed=dow===3, isFri=dow===5;
+    const wn = workdayNumber(y,m,d);
+    const imp = wn!==null && wn<=45;
+
+    if(wn===1)  ev.push({label:'🚀 Kickoff implantação',    cls:'ev-marco', resp:'Marco do projeto',           tip:'Início oficial do projeto. Alinhamento com o cliente sobre prazos, fluxos e responsabilidades. Marco: Dia útil 1 de 45.'});
+    if(wn===2)  ev.push({label:'Envio base colaboradores',  cls:'ev-cli',   resp:'Responsabilidade: Cliente', tip:'Cliente envia a base de colaboradores ativos para cadastro na plataforma. Prazo: dentro dos 45 dias de implantação.'});
+    if(wn===3)  ev.push({label:'Carga histórica atestados', cls:'ev-cli',   resp:'Responsabilidade: Cliente', tip:'Cliente envia a carga histórica de atestados para importação na plataforma.'});
+    if(wn===5)  ev.push({label:'Definição interlocutores',  cls:'ev-both',  resp:'Cliente + IABS',            tip:'Definição dos interlocutores, membros do comitê de saúde e concierge. Dentro dos 45 dias de implantação.'});
+    if(wn===7)  ev.push({label:'Material didático',         cls:'ev-iabs',  resp:'Responsabilidade: IABS',   tip:'IABS cria e entrega material didático personalizado: manual para colaborador e RH. Dentro dos 45 dias.'});
+    if(wn===10) ev.push({label:'Treinamento online',        cls:'ev-iabs',  resp:'Responsabilidade: IABS',   tip:'IABS realiza treinamento online sobre como lançar atestados na plataforma. Dentro dos 45 dias.'});
+    if(wn===12) ev.push({label:'Alinhamento divulgação',    cls:'ev-both',  resp:'Cliente + IABS',           tip:'Alinhamento do período e estratégia de divulgação do projeto para os colaboradores.'});
+    if(wn===45) ev.push({label:'✅ Fim implantação',         cls:'ev-marco', resp:'Marco do projeto',          tip:'Encerramento do período de implantação contratual (45 dias úteis). Início do modo contínuo de operação.'});
+
+    if(imp && isFri && wn>1)
+      ev.push({label:'Checkpoint semanal', cls:'ev-both', resp:'Cliente + IABS', tip:'Reunião semanal de acompanhamento da implantação. Toda sexta-feira durante os 45 dias de implantação.'});
+
+    if(wn>=5)
+      ev.push({label:'Atualização FOPAG', cls:'ev-both', resp:'Cliente + IABS', tip:'Atualização automática diária da base de colaboradores via FOPAG integrada na plataforma.'});
+
+    if(wn===5||wn===20||wn===35)
+      ev.push({label:'Atualização manual (15d)', cls:'ev-cli', resp:'Responsabilidade: Cliente', tip:'Atualização manual da base de colaboradores via importação — a cada 15 dias úteis.'});
+
+    if(isMon && wn>=5)
+      ev.push({label:'Envio atestados RH', cls:'ev-cli', resp:'Responsabilidade: Cliente', tip:'RH envia atestados semanalmente toda segunda-feira. IABS valida em até 48h a partir da data de envio.'});
+
+    if(isWed && wn>=7)
+      ev.push({label:'Validação IABS 48h', cls:'ev-iabs', resp:'Responsabilidade: IABS', tip:'Prazo de validação dos atestados enviados pelo RH na segunda-feira — até 48 horas corridas.'});
+
+    if(wn===20)
+      ev.push({label:'Revisão casos críticos', cls:'ev-iabs', resp:'Responsabilidade: IABS', tip:'Primeira revisão de casos críticos identificados. Análise fechada em até 30 dias. Agendamentos conforme complexidade.'});
+
+    return ev;
+  }
+
+  function render(){
+    const { year:y, month:m, name, sub, pillClass, pillText } = MONTHS_DATA[currentIndex];
+
+    document.getElementById('month-title').textContent = name;
+    document.getElementById('month-sub').textContent   = sub;
+    document.getElementById('month-pill').innerHTML    = `<span class="${pillClass}">${pillText}</span>`;
+    document.getElementById('btn-prev').disabled       = currentIndex === 0;
+    document.getElementById('btn-next').disabled       = currentIndex === MONTHS_DATA.length - 1;
+
+    const firstDay    = new Date(y,m,1).getDay();
+    const daysInMonth = new Date(y,m+1,0).getDate();
+    const today       = new Date();
+    const cal         = document.getElementById('cal');
+    cal.innerHTML     = '';
+
+    for(let i=0; i<firstDay; i++){
+      const e = document.createElement('div');
+      e.className = 'cell empty';
+      cal.appendChild(e);
+    }
+
+    for(let d=1; d<=daysInMonth; d++){
+      const dow     = new Date(y,m,d).getDay();
+      const holiday = isHoliday(y,m,d);
+      const weekend = isWeekend(dow);
+      const isToday = d===today.getDate() && m===today.getMonth() && y===today.getFullYear();
+      const wn      = workdayNumber(y,m,d);
+      const isStart = (y===2026 && m===4 && d===4);
+
+      const cell = document.createElement('div');
+      let cls = 'cell';
+      if(weekend)      cls += ' weekend';
+      else if(holiday) cls += ' holiday';
+      if(isStart)      cls += ' imp-start';
+      cell.className = cls;
+
+      const dn = document.createElement('div');
+      dn.className   = 'day-num' + (weekend?' wkd':'') + (isToday?' today-num':'');
+      dn.textContent = d;
+      cell.appendChild(dn);
+
+      if(wn!==null && wn<=45 && !weekend && !holiday){
+        const dc = document.createElement('div');
+        dc.className   = 'day-counter';
+        dc.textContent = 'D'+wn+'/45';
+        cell.appendChild(dc);
+      }
+
+      if(holiday){
+        const hb = document.createElement('div');
+        hb.className   = 'holiday-label';
+        hb.textContent = holiday;
+        cell.appendChild(hb);
+      }
+
+      if(!weekend && !holiday){
+        getEvents(d,m,y).forEach(ev => {
+          const el = document.createElement('div');
+          el.className    = 'event ' + ev.cls;
+          el.textContent  = ev.label;
+          el.dataset.resp = ev.resp || '';
+          el.dataset.tip  = ev.tip;
+          cell.appendChild(el);
+        });
+      }
+
+      cal.appendChild(cell);
+    }
+
+    attachTooltips();
+  }
+
+  function attachTooltips(){
+    const tip=document.getElementById('tip');
+    const tipLabel=document.getElementById('tip-label');
+    const tipText=document.getElementById('tip-text');
+    document.querySelectorAll('[data-tip]').forEach(el=>{
+      el.addEventListener('mouseenter',()=>{ tipLabel.textContent=el.dataset.resp||''; tipText.textContent=el.dataset.tip; tip.style.display='block'; });
+      el.addEventListener('mousemove', e=>{ tip.style.left=(e.clientX+16)+'px'; tip.style.top=(e.clientY-14)+'px'; });
+      el.addEventListener('mouseleave',()=>{ tip.style.display='none'; });
+    });
+  }
+
+  function changeMonth(dir){
+    const next = currentIndex + dir;
+    if(next < 0 || next >= MONTHS_DATA.length) return;
+    currentIndex = next;
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
